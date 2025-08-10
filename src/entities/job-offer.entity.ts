@@ -29,10 +29,10 @@ export class JobOffer {
   @Column({ name: 'company_name' })
   companyName: string;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ name: 'salary_min', type: 'integer', nullable: true })
   salaryMin?: number;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ name: 'salary_max', type: 'integer', nullable: true })
   salaryMax?: number;
 
   @Column({ nullable: true })
