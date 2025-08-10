@@ -14,7 +14,7 @@ export class JobOffer {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'external_id', unique: true })
+  @Column({ name: 'external_id' })
   externalId: string;
 
   @Column()
@@ -24,16 +24,16 @@ export class JobOffer {
   location: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description?: string | null;
 
   @Column({ name: 'company_name' })
   companyName: string;
 
   @Column({ name: 'salary_min', type: 'integer', nullable: true })
-  salaryMin?: number;
+  salaryMin?: number | null;
 
   @Column({ name: 'salary_max', type: 'integer', nullable: true })
-  salaryMax?: number;
+  salaryMax?: number | null;
 
   @Column({ nullable: true })
   currency?: string;
