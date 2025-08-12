@@ -5,7 +5,8 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class Provider1Mapper implements IJobOfferMapper<Provider1JobDto> {
-  // The 'data' parameter is now strongly typed. No more 'any'!
+  public readonly providerName = 'Provider1';
+
   transform(
     data: Provider1JobDto,
   ): Omit<JobOffer, 'id' | 'createdAt' | 'updatedAt'> {
@@ -21,7 +22,7 @@ export class Provider1Mapper implements IJobOfferMapper<Provider1JobDto> {
       title: data.title,
       companyName: data.company.name,
       location: data.details.location,
-      description: null,
+      description: 'Contract type: ' + data.details.type,
       salaryMin: salaryMin,
       salaryMax: salaryMax,
       currency: 'USD',

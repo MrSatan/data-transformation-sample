@@ -3,23 +3,54 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JobOffer } from '../entities/job-offer.entity';
 import { isPostgresError } from '../util/error';
-import { Provider2Mapper } from './mapper/Provider2.mapper';
-import { Provider1Mapper } from './mapper/Provider1.mapper';
 import { ProvidersService } from '../providers/providers.service';
+import { QueryJobOfferDto } from './dto/query-job-offer.dto';
+import { PaginationResponseDto } from '../shared/dto/pagination-response.dto';
+import { QueryBuilderHelper } from '../util/query-builder.helper';
+import { JOB_OFFER_QUERY_BUILDER } from './query-builder-helper.token';
+import { JOB_OFFER_MAPPERS } from './mapper/mappers.token';
+import { IJobOfferMapper } from './mapper/IJobOfferMapper';
+
+export type CreateJobOfferType = Omit<
+  JobOffer,
+  'id' | 'createdAt' | 'updatedAt'
+>;
 
 @Injectable()
 export class JobOffersService {
+  private readonly mapperMap: Map<string, IJobOfferMapper<any>>;
+
   constructor(
     @InjectRepository(JobOffer)
     private readonly jobOfferRepository: Repository<JobOffer>,
     @Inject(Logger) private readonly logger: Logger,
     private readonly providersService: ProvidersService,
-    private readonly provider1Mapper: Provider1Mapper,
-    private readonly provider2Mapper: Provider2Mapper,
-  ) {}
+    @Inject(JOB_OFFER_MAPPERS) private readonly mappers: IJobOfferMapper<any>[],
+    @Inject(JOB_OFFER_QUERY_BUILDER)
+    private readonly queryBuilderHelper: QueryBuilderHelper<JobOffer>,
+  ) {
+    this.mapperMap = new Map(
+      mappers.map((mapper) => [mapper.providerName, mapper]),
+    );
+  }
 
-  async findAll(): Promise<JobOffer[]> {
-    return this.jobOfferRepository.find();
+  async findAll(
+    queryDto: QueryJobOfferDto,
+  ): Promise<PaginationResponseDto<JobOffer>> {
+    const { page, limit } = queryDto;
+
+    const queryBuilder = this.queryBuilderHelper.build(queryDto);
+
+    const [items, totalItems] = await queryBuilder.getManyAndCount();
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items,
+      totalItems,
+      currentPage: page,
+      totalPages,
+    };
   }
 
   async saveTransformedOffers(
@@ -62,17 +93,32 @@ export class JobOffersService {
       this.providersService.fetchJobsFromProvider2(),
     ]);
 
-    const transformedFromProvider1 = provider1Jobs.map((job) =>
-      this.provider1Mapper.transform(job),
-    );
-    const transformedFromProvider2 = Object.keys(provider2Jobs).map((key) =>
-      this.provider2Mapper.transform(provider2Jobs[key], key),
-    );
+    const allTransformedOffers: CreateJobOfferType[] = [];
 
-    const allTransformedOffers = [
-      ...transformedFromProvider1,
-      ...transformedFromProvider2,
-    ];
+    const provider1Mapper = this.mapperMap.get('Provider1');
+    if (!provider1Mapper) {
+      this.logger.error(
+        'Provider1Mapper not found. Ensure it is registered correctly in JobOffersModule.',
+      );
+    } else {
+      const transformed = provider1Jobs
+        .map((job) => provider1Mapper.transform(job))
+        .filter((offer): offer is CreateJobOfferType => offer !== null);
+      allTransformedOffers.push(...transformed);
+    }
+
+    // --- Process Provider 2 Data ---
+    const provider2Mapper = this.mapperMap.get('Provider2');
+    if (!provider2Mapper) {
+      this.logger.error(
+        'Provider2Mapper not found. Ensure it is registered correctly in JobOffersModule.',
+      );
+    } else {
+      const transformed = Object.keys(provider2Jobs)
+        .map((key) => provider2Mapper.transform(provider2Jobs[key], key))
+        .filter((offer): offer is CreateJobOfferType => offer !== null);
+      allTransformedOffers.push(...transformed);
+    }
 
     if (allTransformedOffers.length > 0) {
       await this.saveTransformedOffers(allTransformedOffers);

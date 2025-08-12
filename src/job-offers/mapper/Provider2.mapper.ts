@@ -5,6 +5,8 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class Provider2Mapper implements IJobOfferMapper<Provider2JobDto> {
+  public readonly providerName = 'Provider2';
+
   transform(
     data: Provider2JobDto,
     jobId: string,
@@ -14,7 +16,7 @@ export class Provider2Mapper implements IJobOfferMapper<Provider2JobDto> {
       title: data.position,
       companyName: data.employer.companyName,
       location: `${data.location.city}, ${data.location.state}`,
-      description: null,
+      description: 'Website: ' + data.employer.website,
       salaryMin: data.compensation.min,
       salaryMax: data.compensation.max,
       currency: data.compensation.currency,
