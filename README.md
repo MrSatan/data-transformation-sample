@@ -1,98 +1,192 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Job Offer Aggregator API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+![NestJS](https://img.shields.io/badge/NestJS-%23E0234E.svg?style=for-the-badge&logo=nestjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) ![Jest](https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+A scalable backend application built with NestJS that fetches job offer data from multiple external APIs, transforms it into a unified structure, stores it in a PostgreSQL database, and exposes a robust, filterable API to retrieve the data.
 
-## Description
+## Overview
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This project serves as a central hub for job offers by integrating with disparate data providers. It periodically fetches data via a configurable cron job, transforms the varied data structures into a clean, unified format, and handles data storage efficiently, preventing duplicates. The core feature is a powerful REST API endpoint that allows clients to retrieve, filter, sort, and paginate through the aggregated job offers.
 
-## Project setup
+The application is built with a focus on clean architecture, scalability, and best practices, demonstrating proficiency in modern backend development techniques.
 
-```bash
-$ npm install
-```
+---
 
-## Compile and run the project
+## Key Features
 
-```bash
-# development
-$ npm run start
+- **Scalable Data Transformation**: Easily integrate new data providers with minimal code changes thanks to a modular mapper pattern.
+- **Scheduled Data Fetching**: A cron job, with its frequency configurable via environment variables, automatically keeps the job data up-to-date.
+- **Developer-Friendly API**: A single, well-documented endpoint (`/api/job-offers`) built for ease of use, featuring a generic and reusable query-building system for powerful filtering, sorting, and pagination.
+- **Type-Safe & Clean Code**: Written entirely in TypeScript and SOLID principles.
+- **Advanced Error Handling**: Graceful handling of API call failures , database errors, and invalid client requests.
+- **Comprehensive Testing**: Includes unit tests for services and data mappers, as well as end-to-end (e2e) tests for the API endpoint.
+- **Automated API Documentation**: Interactive API documentation is automatically generated and served with Swagger (OpenAPI).
+- **Efficient Duplicate Prevention**: Uses a database `UNIQUE` constraint strategy to efficiently handle duplicate job records during data ingestion.
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
-```
+## Architectural Decisions
 
-## Run tests
+This project employs several advanced design patterns to ensure scalability and maintainability:
 
-```bash
-# unit tests
-$ npm run test
+- **Generic Query Builder**: Instead of hardcoding filter logic in the service layer, a reusable `QueryBuilderHelper` is used. This allows new filters to be added declaratively without modifying the core query logic, adhering to the Open/Closed Principle.
+- **Factory Provider for Mappers**: To decouple the `JobOffersService` from concrete mapper implementations, a factory provider is used to inject a collection of all available mappers. This makes adding new data providers a plug-and-play process.
+- **Dependency Injection Everywhere**: All services, helpers, and mappers are managed by the NestJS DI container. There are no manual `new` instantiations in the business logic, making the application highly testable and modular.
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
-```
+---
 
-## Deployment
+## Setup and Installation
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Prerequisites
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- [Node.js](https://nodejs.org/) (v18 or later recommended)
+- [npm](https://www.npmjs.com/) or [Yarn](https://yarnpkg.com/)
+- A running [PostgreSQL](https://www.postgresql.org/download/) instance
+
+### 1. Clone the Repository
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+git clone https://github.com/MrSatan/data-transformation-sample.git
+cd data-transformation-sample
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 2. Install Dependencies
 
-## Resources
+```bash
+npm install
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### 3. Configure Environment Variables
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+First, ensure you have created a new database in your PostgreSQL instance. Then, create a `.env` file in the project root.
 
-## Support
+Now, open the `.env` file and fill in your PostgreSQL database credentials.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```env
+# .env
 
-## Stay in touch
+# PostgreSQL Database Configuration
+APP_NAME=data-transformation-sample
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=your_postgres_user
+DB_PASSWORD=your_postgres_password
+DB_DATABASE=job_offers_db
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Scheduler Configuration (Cron format)
+CRON_SCHEDULE='*/10 * * * *'
+```
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Running the Application
+
+To start the application in development mode with hot-reloading:
+
+```bash
+npm run start:dev
+```
+
+The application will be running on `http://localhost:3000`.
+
+---
+
+## Running Tests
+
+This project includes a comprehensive test suite.
+
+### Run Unit & Integration Tests
+
+This command runs all files ending in `.spec.ts`.
+
+```bash
+npm run test
+```
+
+### Run End-to-End (E2E) Tests
+
+This command runs all files ending in `.e2e-spec.ts`.
+
+```bash
+npm run test:e2e
+```
+
+---
+
+## API Documentation
+
+Interactive API documentation is available through Swagger UI. Once the application is running, navigate to:
+
+**[`http://localhost:3000/api/docs`](http://localhost:3000/api/docs)**
+
+This interface allows you to explore the API endpoint, view schemas, and execute requests directly from your browser.
+
+### API Endpoint: `GET /api/job-offers`
+
+Retrieves a paginated, filtered, and sorted list of job offers.
+
+#### Query Parameters
+
+| Parameter   | Type     | Description                                                                                                                              | Example                        |
+|-------------|----------|------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------|
+| `page`      | `number` | The page number for pagination. Defaults to `1`.                                                                                         | `?page=2`                      |
+| `limit`     | `number` | The number of items per page. Defaults to `10`, max `100`.                                                                               | `?limit=20`                    |
+| `title`     | `string` | Filters by job title (case-insensitive, partial match).                                                                                  | `?title=Engineer`              |
+| `location`  | `string` | Filters by location (case-insensitive, partial match).                                                                                   | `?location=Francisco`          |
+| `minSalary` | `number` | Filters for jobs with a minimum salary greater than or equal to the value.                                                                 | `?minSalary=100000`            |
+| `skills`    | `string` | Filters for jobs where the skills array contains ALL of the specified skills (comma-separated). Uses PostgreSQL's array containment (`@>`) operator. | `?skills=React,Node.js`        |
+| `sortBy`    | `string` | The field to sort by. Allowed values: `postedAt`,`title`, `salaryMin`.                                                                           | `?sortBy=salaryMin`            |
+| `sortOrder` | `string` | The sort order. Allowed values: `ASC`, `DESC`. Defaults to `DESC`.                                                                       | `?sortOrder=ASC`               |
+
+#### Example Request (cURL)
+
+```bash
+curl -X GET "http://localhost:3000/api/job-offers?title=Backend&minSalary=90000&sortBy=postedAt&sortOrder=DESC"
+```
+
+#### Example Success Response (`200 OK`)
+
+```json
+{
+  "items": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "externalId": "P1-339",
+      "title": "Backend Engineer",
+      "location": "San Francisco, CA",
+      "description": null,
+      "companyName": "TechCorp",
+      "salaryMin": 95000,
+      "salaryMax": 141000,
+      "currency": "USD",
+      "skills": ["JavaScript", "Node.js"],
+      "postedAt": "2025-08-01T02:13:47.585Z",
+      "sourceApi": "Provider1",
+      "createdAt": "2025-08-12T06:46:00.000Z",
+      "updatedAt": "2025-08-12T06:46:00.000Z"
+    }
+  ],
+  "totalItems": 1,
+  "currentPage": 1,
+  "totalPages": 1
+}
+```
+
+#### Example Error Response (`400 Bad Request`)
+
+If an invalid query parameter is provided (e.g., `page=-1`):
+
+```json
+{
+  "message": [
+    "page must not be less than 1"
+  ],
+  "error": "Bad Request",
+  "statusCode": 400
+}
+```
+
+---
+
