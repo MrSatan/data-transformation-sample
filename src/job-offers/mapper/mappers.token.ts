@@ -1,0 +1,1 @@
+export const JOB_OFFER_MAPPERS = 'JOB_OFFER_MAPPERS';
